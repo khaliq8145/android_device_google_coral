@@ -57,8 +57,8 @@ allow hal_face_default fwk_stats_service:service_manager find;
 binder_use(hal_face_default)
 
 # Allow writing new camera calibrations
-allow hal_face camera_calibration_vendor_data_file:dir rw_dir_perms;
-allow hal_face camera_calibration_vendor_data_file:file create_file_perms;
+allow { hal_face -coredomain } camera_calibration_vendor_data_file:dir rw_dir_perms;
+allow { hal_face -coredomain } camera_calibration_vendor_data_file:file create_file_perms;
 
 # Allow the face HAL to discover pil sysfs nodes for faceauth firmware loading.
 allow hal_face_default sysfs_faceauth:dir r_dir_perms;
