@@ -47,15 +47,15 @@ on init
     write /sys/block/sda/queue/iostats 0
     write /sys/block/sda/queue/scheduler cfq
     write /sys/block/sda/queue/iosched/slice_idle 0
-    write /sys/block/sda/queue/nr_requests 256
+    write /sys/block/sda/queue/nr_requests 128
     write /sys/block/sde/queue/iostats 0
     write /sys/block/sde/queue/scheduler cfq
     write /sys/block/sde/queue/iosched/slice_idle 0
-    write /sys/block/sde/queue/nr_requests 256
+    write /sys/block/sde/queue/nr_requests 128
     write /sys/block/sdf/queue/iostats 0
     write /sys/block/sdf/queue/scheduler cfq
     write /sys/block/sdf/queue/iosched/slice_idle 0
-    write /sys/block/sdf/queue/nr_requests 256
+    write /sys/block/sdf/queue/nr_requests 128
 
     # Disable powersaving
     write /sys/module/lpm_levels/parameters/sleep_disabled 1
@@ -92,17 +92,17 @@ on init
 
     # configure governor settings for little cluster
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor schedutil
-    write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us 500
+    write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us 300
     write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us 20000
 
     # configure governor settings for big cluster
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor schedutil
-    write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us 500
+    write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us 300
     write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us 20000
 
     # configure governor settings for big big CPU
     write /sys/devices/system/cpu/cpu7/cpufreq/scaling_governor schedutil
-    write /sys/devices/system/cpu/cpu7/cpufreq/schedutil/up_rate_limit_us 500
+    write /sys/devices/system/cpu/cpu7/cpufreq/schedutil/up_rate_limit_us 300
     write /sys/devices/system/cpu/cpu7/cpufreq/schedutil/down_rate_limit_us 20000
 
     # ZRAM setup
@@ -225,7 +225,6 @@ on late-fs
     # Wait for keymaster HALs (TEE and StrongBox)
     exec_start wait_for_strongbox
 
-
     # Mount RW partitions which need run fsck
     mount_all /vendor/etc/fstab.${ro.boot.hardware.platform} --late
 
@@ -245,11 +244,11 @@ on late-fs
     write /sys/module/kdebuginfo/parameters/build_info "${ro.product.name}-${ro.build.type} ${ro.build.version.incremental}"
 
 on post-fs-data
-    mkdir /vendor/data/tombstones 0771 system system
-    mkdir /tombstones/modem 0771 system system
-    mkdir /tombstones/lpass 0771 system system
-    mkdir /tombstones/wcnss 0771 system system
-    mkdir /tombstones/dsps 0771 system system
+    mkdir /vendor/data/tombstones 0000 system system
+    mkdir /tombstones/modem 0000 system system
+    mkdir /tombstones/lpass 0000 system system
+    mkdir /tombstones/wcnss 0000 system system
+    mkdir /tombstones/dsps 0000 system system
     mkdir /data/vendor/hbtp 0750 system system
     mkdir /data/vendor/tloc 0700 system drmrpc
     mkdir /data/vendor/nnhal 0700 system system
@@ -515,11 +514,11 @@ on property:sys.boot_completed=1
 
     # Runtime fs tuning
     write /sys/block/sda/queue/nr_requests 128
-    write /sys/block/sda/queue/iostats 1
+    write /sys/block/sda/queue/iostats 0
     write /sys/block/sde/queue/nr_requests 128
-    write /sys/block/sde/queue/iostats 1
+    write /sys/block/sde/queue/iostats 0
     write /sys/block/sdf/queue/nr_requests 128
-    write /sys/block/sdf/queue/iostats 1
+    write /sys/block/sdf/queue/iostats 0
 
     # Limit 4KB discards to 2GB of space
     write /dev/sys/fs/by-name/userdata/max_small_discards 5120
@@ -697,14 +696,14 @@ service vendor.ssr_setup /vendor/bin/ssr_setup
 on property:persist.vendor.sys.ssr.restart_level=*
     start vendor.ssr_setup
 
-on post-fs-data && property:persist.vendor.sys.ssr.enable_ramdumps=1 && property:vendor.skip.init=0
-    write /sys/module/subsystem_restart/parameters/enable_ramdumps 1
-    mkdir /data/vendor/wifidump 771 root system
-    mkdir /data/vendor/ramdump 771 root system
-    mkdir /data/vendor/ssrdump 771 root system
-    mkdir /data/vendor/ssrlog  775 root system
-    start vendor.ss_ramdump
-    start vendor.crash_event_logger
+on post-fs-data && property:persist.vendor.sys.ssr.enable_ramdumps=0 && property:vendor.skip.init=0
+    write /sys/module/subsystem_restart/parameters/enable_ramdumps 0
+    mkdir /data/vendor/wifidump 000 root system
+    mkdir /data/vendor/ramdump 000 root system
+    mkdir /data/vendor/ssrdump 000 root system
+    mkdir /data/vendor/ssrlog  000 root system
+    stop vendor.ss_ramdump
+    stop vendor.crash_event_logger
 
 on property:persist.vendor.sys.ssr.enable_ramdumps=0
     write /sys/module/subsystem_restart/parameters/enable_ramdumps 0
